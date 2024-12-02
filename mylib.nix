@@ -13,6 +13,7 @@ let
 	;
 	inherit (import <nixpkgs/lib>)
 		fold
+		ifilter0
 		imap0
 	;
 in rec {
@@ -97,4 +98,8 @@ in rec {
 	ge = a: b: a >= b;
 
 	neg = x: -x;
+
+	# TODO: function composition
+
+	remove_at = n: list: ifilter0 (i: v: i != n) list;
 }

@@ -88,4 +88,11 @@ in rec {
 			mul
 			list
 	;
+
+	eq = a: b: a == b;
+	ne = a: b: a != b;
+	ll = a: b: a < b; # lessThan
+	gg = a: b: a > b;
+	le = a: b: a <= b;
+	ge = a: b: a >= b;
 }

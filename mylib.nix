@@ -95,4 +95,6 @@ in rec {
 	gg = a: b: a > b;
 	le = a: b: a <= b;
 	ge = a: b: a >= b;
+
+	neg = x: -x;
 }

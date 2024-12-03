@@ -1,20 +1,28 @@
 let
 	inherit (builtins)
 		add
+		concatLists
 		elemAt
 		filter
 		foldl'
 		genList
 		isAttrs
 		isList
+		isString
 		length
+		match
 		mul
+		replaceStrings
 		split
+		stringLength
+		substring
 	;
 	inherit (import <nixpkgs/lib>)
 		fold
 		ifilter0
 		imap0
+		last
+		range
 	;
 in rec {
 	todo = msg: throw "todo: " + msg;
@@ -102,4 +110,75 @@ in rec {
 	# TODO: function composition
 
 	remove_at = n: list: ifilter0 (i: v: i != n) list;
+
+	id = x: x;
+
+	# flatten_once = x:
+	# 	if isList x
+	# 	then concatMap id x
+	# 	else throw "expected a list";
+
+	flatten_once = concatLists;
+
+	len = x:
+		if isList x then length x
+		else if isString x then stringLength x
+		else throw "expected a list or a string";
+
+	replace = from: to:
+		if isString from && isString to then
+			replaceStrings [from] [to]
+		else if isList from && isString to then
+			replaceStrings from (genList (x: to) (len from))
+		else if isList from && isList to then
+			replaceStrings from to
+		else #if isString from && isList to then
+			throw "expected string,string or list,string or list,list"
+	;
+
+	tensor_product_with_self = list:
+		map
+			(v:
+				map
+				(x: [v x])
+				list
+			)
+			list
+		|> flatten_once
+	;
+
+	dedup_consecutive = list:
+		foldl'
+			(acc: el:
+				if acc == [] || last acc != el then acc ++ [el] else acc
+			)
+			[]
+			list
+	;
+
+	drop_last = n: list:
+		ifilter0
+			(i: v: i < len list - n)
+			list
+	;
+
+	tensor_product = list1: list2:
+		map
+			(v:
+				map
+				(x: [v x])
+				list2
+			)
+			list1
+		|> flatten_once
+	;
+
+	match_all_with_lenrange = minlen: maxlen: regex: string:
+		tensor_product (range 0 (len string)) (range minlen maxlen)
+			|> filter (il: _0 il + _1 il <= len string)
+			|> map (il: substring (_0 il) (_1 il) string)
+			|> map (match regex)
+			|> filter (ne null)
+			|> flatten_once
+	;
 }

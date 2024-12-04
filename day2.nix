@@ -10,8 +10,10 @@ let
 	inherit (import ./mylib.nix)
 		_0
 		_1
+		bool_to_int
 		map_recursive
 		split_
+		split_lines
 		sum
 	;
 	diff = list:
@@ -28,11 +30,10 @@ let
 			(all     is_1_to_3       report_diff) ||
 			(all (x: is_1_to_3 (-x)) report_diff)
 	;
-	bool_to_int = bool: if bool then 1 else 0;
 in
 	input:
 	input
-		|> split_ "\n"
+		|> split_lines
 		|> map (split_ " ")
 		|> map_recursive toInt
 		|> map is_safe

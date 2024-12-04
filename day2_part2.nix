@@ -12,9 +12,11 @@ let
 	inherit (import ./mylib.nix)
 		_0
 		_1
+		bool_to_int
 		map_recursive
 		remove_at
 		split_
+		split_lines
 		sum
 	;
 	diff = list:
@@ -34,11 +36,10 @@ let
 	is_safe_with_problem_dampener = report:
 		any is_safe (imap0 (i: v: remove_at i report) report)
 	;
-	bool_to_int = bool: if bool then 1 else 0;
 in
 	input:
 	input
-		|> split_ "\n"
+		|> split_lines
 		|> map (split_ " ")
 		|> map_recursive toInt
 		|> map is_safe_with_problem_dampener

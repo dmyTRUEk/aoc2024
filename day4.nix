@@ -7,22 +7,21 @@ let
 	inherit (import ./mylib.nix)
 		_0
 		_1
+		bool_to_int
 		elem_at_2d
 		len
-		split_
+		split_lines
 		string_to_list
 		sum
 		tensor_product
 	;
-	split_lines = split_ "\n";
 	# lines_to_chars_arr2d = lines:
 	# 	assert all (l: eq (len l) (len lines)) lines;
 	# 	lines
 	# 		|> map string_to_list
 	# ;
+	# optimization idea: map chars to ints, bc they probably use less memory: X->0 M->1 A->2 S->3
 	is_xmas_or_rev = a: b: c: d: [a b c d] == ["X" "M" "A" "S"] || [a b c d] == ["S" "A" "M" "X"];
-	# is_xmas_or_rev = a: b: c: d: [a b c d] == [0 1 2 3] || [a b c d] == [3 2 1 0];
-	bool_to_int = b: if b then 1 else 0;
 	count_hor = arr2d:
 		tensor_product (range 0 (len arr2d - 4)) (range 0 (len arr2d - 1))
 			|> map (xy:

@@ -13,6 +13,7 @@ let
 		eq
 		map_recursive
 		split_
+		split_lines
 		sum
 		transpose
 	;
@@ -20,7 +21,7 @@ in
 	input:
 	let
 		lr = input
-			|> split_ "\n"
+			|> split_lines
 			|> map (split_ "   ")
 			|> map_recursive toInt
 			|> transpose

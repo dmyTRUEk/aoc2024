@@ -181,4 +181,13 @@ in rec {
 			|> filter (ne null)
 			|> flatten_once
 	;
+
+	elem_at = i: list: elemAt list i;
+
+	elem_at_2d = x: y: arr2d:
+		arr2d
+			|> elem_at y
+			|> elem_at x
+		# elem_at x (elem_at y arr2d)
+	;
 }

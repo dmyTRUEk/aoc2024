@@ -6,6 +6,7 @@ let
 		filter
 		foldl'
 		genList
+		head
 		isAttrs
 		isList
 		isString
@@ -18,6 +19,7 @@ let
 		substring
 	;
 	inherit (import <nixpkgs/lib>)
+		drop
 		fold
 		ifilter0
 		imap0
@@ -30,6 +32,8 @@ in rec {
 	unreachable = msg: throw "unreachable reached: " + msg;
 
 	split_ = sep_regex: str: filter (el: el != []) (split sep_regex str);
+
+	split_lines = split_ "\n";
 
 	string_to_list = string: filter (el: el != "") (split_ "" string);
 
@@ -188,6 +192,18 @@ in rec {
 		arr2d
 			|> elem_at y
 			|> elem_at x
-		# elem_at x (elem_at y arr2d)
 	;
+
+	bool_to_int = b: if b then 1 else 0;
+
+	juxt = v: fns:
+		map
+			(f: f v)
+			fns
+	;
+
+	shift_l_once = list: (drop 1 list) ++ [(head list)];
+	shift_r_once = list: [(last list)] ++ (drop_last 1 list);
+	shift_l = n: list: if n == 0 then list else shift_l (n - 1) (shift_l_once list);
+	shift_r = n: list: if n == 0 then list else shift_r (n - 1) (shift_r_once list);
 }

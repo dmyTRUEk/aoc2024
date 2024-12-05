@@ -27,25 +27,29 @@ let
 		range
 	;
 in rec {
+	# TODO(refactor): sort by alphabetic order.
+
 	todo = msg: throw "todo: " + msg;
 
 	unreachable = msg: throw "unreachable reached: " + msg;
 
-	split_ = sep_regex: str: filter (el: el != []) (split sep_regex str);
-
+	split_ = sep_regex: str: str |> split sep_regex |> filter (ne []);
 	split_lines = split_ "\n";
+	split_chunks = split_ "\n\n";
 
-	string_to_list = string: filter (el: el != "") (split_ "" string);
+	string_to_list = string: string |> split_ "" |> filter (ne "");
 
 	repeat_string = string: n:
 		if n == 0 then ""
-		else (string + repeat_string string (n - 1));
+		else (string + repeat_string string (n - 1))
+	;
 
 	enumerate = list:
 		foldl'
 			(acc: el: acc ++ [[(length acc) el]])
 			[]
-			list;
+			list
+	;
 
 	transpose = arr2d:
 		foldl'
@@ -58,9 +62,9 @@ in rec {
 			arr2d
 	;
 
-	map_recursive = f: x:
+	map_rec = f: x:
 		if isList x then
-			map (map_recursive f) x
+			map (map_rec f) x
 		else if isAttrs x then
 			todo ""
 		else
@@ -111,7 +115,7 @@ in rec {
 
 	neg = x: -x;
 
-	# TODO: function composition
+	# TODO(feat): function composition.
 
 	remove_at = n: list: ifilter0 (i: v: i != n) list;
 
@@ -124,11 +128,15 @@ in rec {
 
 	flatten_once = concatLists;
 
+	# TODO(feat): flatten at some specific depth.
+
 	len = x:
 		if isList x then length x
 		else if isString x then stringLength x
-		else throw "expected a list or a string";
+		else throw "expected a list or a string"
+	;
 
+	# TODO(feat): same but for list.
 	replace = from: to:
 		if isString from && isString to then
 			replaceStrings [from] [to]
@@ -138,17 +146,6 @@ in rec {
 			replaceStrings from to
 		else #if isString from && isList to then
 			throw "expected string,string or list,string or list,list"
-	;
-
-	tensor_product_with_self = list:
-		map
-			(v:
-				map
-				(x: [v x])
-				list
-			)
-			list
-		|> flatten_once
 	;
 
 	dedup_consecutive = list:
@@ -166,16 +163,17 @@ in rec {
 			list
 	;
 
-	tensor_product = list1: list2:
+	tensor_product = xs: ys:
 		map
-			(v:
+			(x:
 				map
-				(x: [v x])
-				list2
+				(y: [x y])
+				ys
 			)
-			list1
+			xs
 		|> flatten_once
 	;
+	tensor_product_with_self = list: tensor_product list list;
 
 	match_all_with_lenrange = minlen: maxlen: regex: string:
 		tensor_product (range 0 (len string)) (range minlen maxlen)

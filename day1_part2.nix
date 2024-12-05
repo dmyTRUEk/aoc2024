@@ -11,7 +11,7 @@ let
 		_0
 		_1
 		eq
-		map_recursive
+		map_rec
 		split_
 		split_lines
 		sum
@@ -23,7 +23,7 @@ in
 		lr = input
 			|> split_lines
 			|> map (split_ "   ")
-			|> map_recursive toInt
+			|> map_rec toInt
 			|> transpose
 		;
 		l = _0 lr;

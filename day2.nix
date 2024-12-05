@@ -11,7 +11,7 @@ let
 		_0
 		_1
 		bool_to_int
-		map_recursive
+		map_rec
 		split_
 		split_lines
 		sum
@@ -35,7 +35,7 @@ in
 	input
 		|> split_lines
 		|> map (split_ " ")
-		|> map_recursive toInt
+		|> map_rec toInt
 		|> map is_safe
 		|> map bool_to_int
 		|> sum

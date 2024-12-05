@@ -9,7 +9,7 @@ let
 		_0
 		_1
 		distance
-		map_recursive
+		map_rec
 		split_
 		split_lines
 		sum
@@ -20,7 +20,7 @@ in
 	input
 		|> split_lines
 		|> map (split_ "   ")
-		|> map_recursive toInt
+		|> map_rec toInt
 		|> transpose
 		|> map (sort (a: b: a < b))
 		|> transpose

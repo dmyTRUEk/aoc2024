@@ -10,7 +10,7 @@ let
 	inherit (import ./mylib.nix)
 		_0
 		_1
-		map_recursive
+		map_rec
 		match_all_with_lenrange
 		ne
 		split_
@@ -45,6 +45,6 @@ in
 		|> filter (ne null) # where these nulls come from??
 		|> filter_donts
 		|> map (split_ ",")
-		|> map_recursive toInt
+		|> map_rec toInt
 		|> map (xy: (_0 xy) * (_1 xy))
 		|> sum

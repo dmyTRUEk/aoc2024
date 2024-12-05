@@ -2,6 +2,7 @@ let
 	inherit (builtins)
 		add
 		concatLists
+		elem
 		elemAt
 		filter
 		foldl'
@@ -184,6 +185,7 @@ in rec {
 			|> flatten_once
 	;
 
+	elem_ = list: el: elem el list;
 	elem_at = i: list: elemAt list i;
 
 	elem_at_2d = x: y: arr2d:
@@ -204,4 +206,6 @@ in rec {
 	shift_r_once = list: [(last list)] ++ (drop_last 1 list);
 	shift_l = n: list: if n == 0 then list else shift_l (n - 1) (shift_l_once list);
 	shift_r = n: list: if n == 0 then list else shift_r (n - 1) (shift_r_once list);
+
+	# TODO(feat): function to swap arguments: swap_args (f a b) == (f b a). is it even possible/will be usable for |> ?
 }

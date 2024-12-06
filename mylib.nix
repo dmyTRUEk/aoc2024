@@ -19,13 +19,17 @@ let
 		stringLength
 		substring
 	;
-	inherit (import <nixpkgs/lib>)
+	lib = import <nixpkgs/lib>;
+	inherit (lib)
 		drop
 		fold
 		ifilter0
 		imap0
 		last
 		range
+	;
+	inherit (lib.lists)
+		findFirstIndex
 	;
 in rec {
 	# TODO(refactor): sort by alphabetic order.
@@ -208,4 +212,75 @@ in rec {
 	shift_r = n: list: if n == 0 then list else shift_r (n - 1) (shift_r_once list);
 
 	# TODO(feat): function to swap arguments: swap_args (f a b) == (f b a). is it even possible/will be usable for |> ?
+
+	# EXPERIMENTAL
+	# TODO: test
+	flatten_at = depth: list:
+		if depth == 0 then
+			flatten_once list
+		else
+			list
+				|> map (l: flatten_at (depth - 1) l)
+	;
+
+	get_single = list:
+		if len list == 1 then
+			_0 list
+		else
+			throw "expected only one element in a list, but ${len list |> toString} was found"
+	;
+
+	get_single_or = default: list:
+		if len list == 0 then
+			default
+		else if len list == 1 then
+			_0 list
+		else
+			throw "expected at most one element in a list, but ${len list |> toString} was found"
+	;
+
+	count_rec = pred: list_or_el:
+		if isList list_or_el then
+			list_or_el
+				|> map (count_rec pred)
+				|> sum
+		else
+			pred list_or_el |> bool_to_int
+	;
+
+	swap = ab: [(_1 ab) (_0 ab)];
+
+	join = sep: list:
+		foldl'
+			(acc: el:
+				if acc == null then
+					el
+				else
+					acc + sep + el
+			)
+			null
+			list
+	;
+
+	find_index_in_arr2d = pred: arr2d:
+		arr2d
+			|> imap0 (i: list: [i] ++ [(findFirstIndex pred null list)])
+			|> filter (el: _1 el != null)
+			|> get_single_or null
+	;
+
+	add_vec2d = a: b:
+		assert length a == 2;
+		assert length b == 2;
+		[(_0 a + _0 b) (_1 a + _1 b)]
+	;
+
+	replaced_arr2d = X: Y: new_value: arr2d:
+		arr2d |> imap0 (y: line:
+			if y != Y then line else
+				line |> imap0 (x: v:
+					if x != X then v else new_value
+				)
+		)
+	;
 }

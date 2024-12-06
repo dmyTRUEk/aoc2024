@@ -27,6 +27,7 @@ let
 		imap0
 		last
 		range
+		sublist
 	;
 	inherit (lib.lists)
 		findFirstIndex
@@ -78,6 +79,7 @@ in rec {
 
 	_0 = list: elemAt list 0;
 	_1 = list: elemAt list 1;
+	_2 = list: elemAt list 2;
 
 	abs = x: if x > 0 then x else -x;
 
@@ -146,7 +148,7 @@ in rec {
 		if isString from && isString to then
 			replaceStrings [from] [to]
 		else if isList from && isString to then
-			replaceStrings from (genList (x: to) (len from))
+			replaceStrings from (genList (x: to) (length from))
 		else if isList from && isList to then
 			replaceStrings from to
 		else #if isString from && isList to then
@@ -164,7 +166,7 @@ in rec {
 
 	drop_last = n: list:
 		ifilter0
-			(i: v: i < len list - n)
+			(i: v: i < length list - n)
 			list
 	;
 
@@ -182,7 +184,7 @@ in rec {
 
 	match_all_with_lenrange = minlen: maxlen: regex: string:
 		tensor_product (range 0 (len string)) (range minlen maxlen)
-			|> filter (il: _0 il + _1 il <= len string)
+			|> filter (il: _0 il + _1 il <= stringLength string)
 			|> map (il: substring (_0 il) (_1 il) string)
 			|> map (match regex)
 			|> filter (ne null)
@@ -224,19 +226,19 @@ in rec {
 	;
 
 	get_single = list:
-		if len list == 1 then
+		if length list == 1 then
 			_0 list
 		else
 			throw "expected only one element in a list, but ${len list |> toString} was found"
 	;
 
 	get_single_or = default: list:
-		if len list == 0 then
+		if length list == 0 then
 			default
-		else if len list == 1 then
+		else if length list == 1 then
 			_0 list
 		else
-			throw "expected at most one element in a list, but ${len list |> toString} was found"
+			throw "expected at most one element in a list, but ${length list |> toString} was found"
 	;
 
 	count_rec = pred: list_or_el:
@@ -267,6 +269,15 @@ in rec {
 			|> imap0 (i: list: [i] ++ [(findFirstIndex pred null list)])
 			|> filter (el: _1 el != null)
 			|> get_single_or null
+			# same, but slower:
+			# |> imap0 (y: list:
+			# 	list
+			# 		|> imap0 (x: v: if pred v then [y x] else null)
+			# 		|> filter (ne null)
+			# 		|> get_single_or null
+			# )
+			# |> filter (ne null)
+			# |> get_single_or null
 	;
 
 	add_vec2d = a: b:
@@ -282,5 +293,25 @@ in rec {
 					if x != X then v else new_value
 				)
 		)
+		# alternative implementation, but is bugs out `day6.nix`, same speed
+		# (arr2d |> sublist 0 Y) ++
+		# [(
+		# 	let line = arr2d |> elem_at Y;
+		# 	in
+		# 		(line |> sublist 0 X) ++
+		# 		[new_value] ++
+		# 		(line |> sublist (X + 1) (length line))
+		# )] ++
+		# (arr2d |> sublist (Y + 1) (length arr2d) )
+	;
+
+	indices_of_in_arr2d = pred: arr2d:
+		arr2d
+			|> imap0 (y: line:
+				line |> imap0 (x: v: [y x v])
+			)
+			|> flatten_once
+			|> filter (yxv: pred (_2 yxv))
+			|> map (yxv: [(_0 yxv) (_1 yxv)])
 	;
 }

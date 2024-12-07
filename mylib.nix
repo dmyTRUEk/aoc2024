@@ -267,7 +267,7 @@ in rec {
 
 	find_index_in_arr2d = pred: arr2d:
 		arr2d
-			|> imap0 (i: list: [i] ++ [(findFirstIndex pred null list)])
+			|> imap0 (i: list: [i (findFirstIndex pred null list)])
 			|> filter (el: _1 el != null)
 			|> get_single_or null
 			# same, but slower:

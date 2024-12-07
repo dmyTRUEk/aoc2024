@@ -121,6 +121,7 @@ in rec {
 	ge = a: b: a >= b;
 
 	neg = x: -x;
+	not = x: !x;
 
 	# TODO(feat): function composition.
 

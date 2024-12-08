@@ -83,6 +83,8 @@ in rec {
 	_2 = list: elemAt list 2;
 
 	abs = x: if x > 0 then x else -x;
+	div  = a: b: a / b;
+	div_ = b: a: a / b;
 
 	distance = a: b: abs (a - b);
 
@@ -136,6 +138,12 @@ in rec {
 	# 	else throw "expected a list";
 
 	flatten_once = concatLists;
+	flatten_n = n: list:
+		if n == 0 then
+			list
+		else
+			flatten_n (n - 1) (flatten_once list)
+	;
 
 	# TODO(feat): flatten at some specific depth.
 
@@ -223,8 +231,7 @@ in rec {
 		if depth == 0 then
 			flatten_once list
 		else
-			list
-				|> map (l: flatten_at (depth - 1) l)
+			list |> map (l: flatten_at (depth - 1) l)
 	;
 
 	get_single = list:
@@ -266,10 +273,14 @@ in rec {
 			list
 	;
 
-	find_index_in_arr2d = pred: arr2d:
+	find_indices_in_arr2d = pred: arr2d:
 		arr2d
 			|> imap0 (i: list: [i (findFirstIndex pred null list)])
 			|> filter (el: _1 el != null)
+	;
+
+	find_index_in_arr2d = pred: arr2d:
+		find_indices_in_arr2d pred arr2d
 			|> get_single_or null
 			# same, but slower:
 			# |> imap0 (y: list:
@@ -286,6 +297,26 @@ in rec {
 		assert length a == 2;
 		assert length b == 2;
 		[(_0 a + _0 b) (_1 a + _1 b)]
+	;
+	sub_vec2d = a: b:
+		assert length a == 2;
+		assert length b == 2;
+		[(_0 a - _0 b) (_1 a - _1 b)]
+	;
+	neg_vec2d = a:
+		assert length a == 2;
+		[(-_0 a) (-_1 a)]
+	;
+	vec2d_is_xx = v: _0 v == _1 v;
+	# checks if a < b
+	vec2d_ll = a: b:
+		if a == b then
+			false
+		else
+			if _0 a == _0 b then
+				_1 a < _1 b
+			else
+				_0 a < _0 b
 	;
 
 	replaced_arr2d = X: Y: new_value: arr2d:

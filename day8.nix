@@ -17,8 +17,8 @@ let
 		flatten_n
 		string_to_arr2d
 		sub_vec2d
-		vec2d_ll
 		tensor_product_with_self
+		vec2d_ll
 	;
 	find_antinodes = ps:
 		tensor_product_with_self ps

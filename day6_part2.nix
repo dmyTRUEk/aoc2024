@@ -32,14 +32,7 @@ let
 		len
 		ne
 		replaced_arr2d
-		split_lines
-		string_to_list
-	;
-
-	input_to_map = string:
-		string
-			|> split_lines
-			|> map string_to_list
+		string_to_arr2d
 	;
 
 	m_to_string = m:
@@ -150,7 +143,7 @@ let
 in
 	input:
 	let
-		m_initial = input |> input_to_map;
+		m_initial = input |> string_to_arr2d;
 		guard_pos = get_guard_yx m_initial;
 		m_trace_indices = m_initial |> get_trace_indices |> filter (ne guard_pos);
 	in

@@ -44,6 +44,7 @@ in rec {
 	split_chunks = split_ "\n\n";
 
 	string_to_list = string: string |> split_ "" |> filter (ne "");
+	string_to_arr2d = string: string |> split_lines |> map string_to_list;
 
 	repeat_string = string: n:
 		if n == 0 then ""

@@ -10,8 +10,7 @@ let
 		bool_to_int
 		elem_at_2d
 		len
-		split_lines
-		string_to_list
+		string_to_arr2d
 		sum
 		tensor_product
 	;
@@ -83,6 +82,5 @@ let
 in
 	input:
 	input
-		|> split_lines
-		|> map string_to_list
+		|> string_to_arr2d
 		|> count_xmas

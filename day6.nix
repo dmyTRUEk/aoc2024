@@ -21,13 +21,7 @@ let
 		# join
 		len
 		replaced_arr2d
-		split_lines
-		string_to_list
-	;
-	input_to_map = string:
-		string
-			|> split_lines
-			|> map string_to_list
+		string_to_arr2d
 	;
 	# map_to_string = m:
 	# 	m
@@ -83,5 +77,5 @@ let
 in
 	input:
 	input
-		|> input_to_map
+		|> string_to_arr2d
 		|> path_area

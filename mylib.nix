@@ -293,6 +293,7 @@ in rec {
 			# |> get_single_or null
 	;
 
+	# TODO(refactor): `*_vec2d` -> `vec2d_*`, maybe into separate file?
 	add_vec2d = a: b:
 		assert length a == 2;
 		assert length b == 2;
@@ -303,6 +304,11 @@ in rec {
 		assert length b == 2;
 		[(_0 a - _0 b) (_1 a - _1 b)]
 	;
+	mul_vec2d = n: v:
+		assert length v == 2;
+		[(n * _0 v) (n * _1 v)]
+	;
+	mul_vec2d_ = v: n: mul_vec2d n v;
 	neg_vec2d = a:
 		assert length a == 2;
 		[(-_0 a) (-_1 a)]

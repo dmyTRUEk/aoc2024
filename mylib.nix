@@ -82,6 +82,10 @@ in rec {
 	_1 = list: elemAt list 1;
 	_2 = list: elemAt list 2;
 
+	_01 = sublist 0 2;
+	# _02 = list: [(_0 list) (_2 list)];
+	_12 = sublist 1 2;
+
 	abs = x: if x > 0 then x else -x;
 	div  = a: b: a / b;
 	div_ = b: a: a / b;

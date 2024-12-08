@@ -54,6 +54,7 @@ let
 	# TODO(optim): try `dir_to_{y|x}_delta`
 
 	# TODO(optim): benchmark which is faster -- same?
+	# dirs = ["^" ">" "v" "<"];
 	# get_next_dir = dir:
 	# 	elemAt dirs (mod (findFirstIndex (eq dir) null dirs + 1) (length dirs))
 	# ;
@@ -90,13 +91,13 @@ let
 	is_looped_ = states: yxd: m:
 		if !is_guard_on_map yxd m then
 			false
-		else if elem yxd states then
+		else if hasAttr (toString yxd) states then
 			true
 		else
 			let yxd' = step yxd m; in
-			is_looped_ (states ++ [yxd]) yxd' m
+			is_looped_ (states // {${toString/*some voodoo magic*/yxd}=0;}) yxd' m
 	;
-	is_looped = yxd: m: is_looped_ [] yxd m;
+	is_looped = yxd: m: is_looped_ {} yxd m;
 
 	get_trace_indices = yxd: m:
 		if !is_guard_on_map yxd m then

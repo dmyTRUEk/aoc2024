@@ -3,6 +3,7 @@ let
 		elem
 		elemAt
 		filter
+		length
 		trace
 	;
 	lib = import <nixpkgs/lib>;
@@ -29,7 +30,7 @@ let
 		flatten_once
 		indices_of_in_arr2d
 		join
-		len
+		# len
 		ne
 		replaced_arr2d
 		string_to_arr2d
@@ -43,89 +44,109 @@ let
 
 	dirs = ["^" ">" "v" "<"];
 
-	get_guard_yx = m:
-		find_index_in_arr2d (elem_ dirs) m
-			# |> swap # yx -> xy # disabled bc cant swap null
-	;
+	# get_guard_yx = m:
+	# 	find_index_in_arr2d (elem_ dirs) m
+	# 		# |> swap # yx -> xy # disabled bc cant swap null
+	# ;
 
 	get_guard_state_from_guard_yx = yx: m:
 		yx ++ [(elem_at_2d (_1 yx) (_0 yx) m)]
 	;
 
-	get_guard_state = m:
-		get_guard_state_from_guard_yx (get_guard_yx m) m
-	;
+	# get_guard_state = m:
+	# 	get_guard_state_from_guard_yx (get_guard_yx m) m
+	# ;
 
 	is_blocked_at = x: y: m:
-		if 0 <= x && x < len m && 0 <= y && y < len m then
+		if 0 <= x && x < length m && 0 <= y && y < length m then
 			elem_at_2d x y m == "#"
 		else
 			false
 	;
 
-	dir_to_xy_delta = dir:
-		{
-			"^" = [0 (-1)];
-			">" = [1 0];
-			"v" = [0 1];
-			"<" = [(-1) 0];
-		}.${dir}
-	;
+	dir_to_xy_delta_ = {
+		"^" = [0 (-1)];
+		">" = [1 0];
+		"v" = [0 1];
+		"<" = [(-1) 0];
+	};
+	dir_to_xy_delta = dir: dir_to_xy_delta_.${dir};
+	dir_to_yx_delta_ = {
+		"^" = [(-1) 0];
+		">" = [0 1];
+		"v" = [1 0];
+		"<" = [0 (-1)];
+	};
+	dir_to_yx_delta = dir: dir_to_yx_delta_.${dir};
 
-	next_dir = dir:
-		elemAt dirs (mod (findFirstIndex (eq dir) null dirs + 1) (len dirs))
-	;
+	# TODO(optim): benchmark which is faster -- same?
+	# next_dir = dir:
+	# 	elemAt dirs (mod (findFirstIndex (eq dir) null dirs + 1) (length dirs))
+	# ;
+	dir_to_next_dir = {
+		"^" = ">";
+		">" = "v";
+		"v" = "<";
+		"<" = "^";
+	};
+	next_dir = dir: dir_to_next_dir.${dir};
 
-	step = m: # alternative names: proceed, walk, advance
+	step = yx: m: # alternative names: proceed, walk, advance
 		let
-			yx = get_guard_yx m;
 			y = _0 yx;
 			x = _1 yx;
-			dir = elem_at_2d x y m;
-			next_xy = add_vec2d [x y] (dir_to_xy_delta dir);
-			next_x = _0 next_xy;
-			next_y = _1 next_xy;
+			dir = elem_at_2d x y m; # TODO(optim)
+			next_yx = add_vec2d yx (dir_to_yx_delta dir);
+			next_y = _0 next_yx;
+			next_x = _1 next_yx;
 		in
+			# TODO(optim): rewrite without `replaced_arr2d`, use `guard_state` & `m_initial`
 			if is_blocked_at next_x next_y m then
-				m
-					|> replaced_arr2d x y (next_dir dir)
+				[yx (m |> replaced_arr2d x y (next_dir dir))]
 			else
-				m
-					|> replaced_arr2d x y "X"
-					|> replaced_arr2d next_x next_y dir
+				[next_yx (m |> replaced_arr2d x y "X" |> replaced_arr2d next_x next_y dir)]
 	;
 
-	do_steps = n: m:
+	do_steps = n: guard_yx: m:
 		if n == 0 then
-			m
+			[guard_yx m]
 		else
-			do_steps (n - 1) (step m)
+			let guard_yx_m' = step guard_yx m; guard_yx' = _0 guard_yx_m'; m' = _1 guard_yx_m'; in
+			do_steps (n - 1) guard_yx' m'
 	;
 
-	loop_step = m:
-		if (get_guard_yx m) == null then
-			m
-		else
-			loop_step (step m)
+	is_guard_on_map = guard_yx: m:
+		let s = length m; in
+		0 <= _1 guard_yx && _1 guard_yx < s &&
+		0 <= _0 guard_yx && _0 guard_yx < s
 	;
 
-	is_looped_ = states: m:
-		let guard_yx = get_guard_yx m; in
-		if guard_yx == null then
+	loop_step = guard_yx: m:
+		if !is_guard_on_map guard_yx m then
+			m
+		else
+			let guard_yx_m' = step guard_yx m; guard_yx' = _0 guard_yx_m'; m' = _1 guard_yx_m'; in
+			loop_step guard_yx' m'
+	;
+
+	is_looped_ = states: guard_yx: m:
+		let guard_state = get_guard_state_from_guard_yx guard_yx m; in
+		if !is_guard_on_map guard_yx m then
 			false
-		else if elem (get_guard_state_from_guard_yx guard_yx m) states then
+		else if elem guard_state states then
 			true
 		else
-			is_looped_ (states ++ [(get_guard_state_from_guard_yx guard_yx m)]) (step m)
+			let guard_yx_m' = step guard_yx m; guard_yx' = _0 guard_yx_m'; m' = _1 guard_yx_m'; in
+			is_looped_ (states ++ [guard_state]) guard_yx' m'
 	;
-	is_looped = m: is_looped_ [] m;
+	is_looped = guard_yx: m: is_looped_ [] guard_yx m;
 
-	get_trace_indices_ = m:
-		let guard_yx = get_guard_yx m; in
-		if guard_yx == null then
+	get_trace_indices_ = guard_yx: m:
+		if !is_guard_on_map guard_yx m then
 			[]
 		else
-			[guard_yx] ++ get_trace_indices_ (step m)
+			let guard_yx_m' = step guard_yx m; guard_yx' = _0 guard_yx_m'; m' = _1 guard_yx_m'; in
+			[guard_yx'] ++ get_trace_indices_ guard_yx' m'
 	;
 	# get_trace_indices_ = trace: m:
 	# 	let guard_yx = get_guard_yx m; in
@@ -134,8 +155,8 @@ let
 	# 	else
 	# 		get_trace_indices_ (trace ++ [guard_yx]) (step m)
 	# ;
-	get_trace_indices = m:
-		indices_of_in_arr2d (eq "X") (loop_step m)
+	get_trace_indices = guard_yx: m:
+		indices_of_in_arr2d (eq "X") (loop_step guard_yx m)
 		# assert !(is_looped m);
 		# get_trace_indices_ m
 		# get_trace_indices_ [] m
@@ -144,25 +165,25 @@ in
 	input:
 	let
 		m_initial = input |> string_to_arr2d;
-		guard_pos = get_guard_yx m_initial;
-		m_trace_indices = m_initial |> get_trace_indices |> filter (ne guard_pos);
+		guard_yx = find_index_in_arr2d (eq "^") m_initial;
+		m_trace_indices = m_initial |> get_trace_indices guard_yx |> filter (ne guard_yx);
 	in
-		assert !(is_looped m_initial);
-		m_trace_indices
-			# |> sublist 0 10
-			|> map (yx: replaced_arr2d (_1 yx) (_0 yx) "#" m_initial)
-			# |> len
-			# |> elem_at 30
+		# m_initial
+		# 	|> do_steps 55 guard_yx
+			# |> _1
 			# |> m_to_string
-			# |> is_looped
+
+		# assert !(is_looped guard_yx m_initial);
+		m_trace_indices
+			|> sublist 0 10 # FIXME
+			|> map (yx: replaced_arr2d (_1 yx) (_0 yx) "#" m_initial)
+			# |> length
+			# |> elem_at 30
+			# |> loop_step guard_yx
+			# |> is_looped guard_yx
+			# |> m_to_string
 			# |> map m_to_string
 			# |> map (ms: trace ("\n"+ms) 0)
 			# |> map (do_steps 40)
-			|> filter is_looped
-			|> len
-
-		# m_initial
-		# 	|> replaced_arr2d 3 6 "#"
-		# 	|> is_looped
-			# |> loop_step
-			# |> m_to_string
+			|> filter (is_looped guard_yx)
+			|> length

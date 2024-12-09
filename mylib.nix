@@ -275,6 +275,7 @@ in rec {
 			)
 			null
 			list
+			|> (s: if s == null then "" else s)
 	;
 
 	find_indices_in_arr2d = pred: arr2d:

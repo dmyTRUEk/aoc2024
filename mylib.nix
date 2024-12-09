@@ -223,7 +223,7 @@ in rec {
 	;
 
 	shift_l_once = list: (drop 1 list) ++ [(head list)];
-	shift_r_once = list: [(last list)] ++ (drop_last 1 list);
+	shift_r_once = list: [(last list)] ++ (drop_last 1 list); # TODO(refactor+optimization): `drop_last` -> `lib.init`
 	shift_l = n: list: if n == 0 then list else shift_l (n - 1) (shift_l_once list);
 	shift_r = n: list: if n == 0 then list else shift_r (n - 1) (shift_r_once list);
 

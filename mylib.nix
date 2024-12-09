@@ -357,4 +357,40 @@ in rec {
 			|> filter (yxv: pred (_2 yxv))
 			|> map (yxv: [(_0 yxv) (_1 yxv)])
 	;
+
+	index_of_first_from = i: pred: default: list:
+		let
+			index_of_first_ = i: pred: default: list:
+				if i >= length list then
+					default
+				else if pred (elemAt list i) then
+					i
+				else
+					index_of_first_  (i + 1) pred default list
+			;
+		in
+			index_of_first_ i pred default list
+	;
+	index_of_first = pred: default: list:
+		index_of_first_from 0 pred default list
+	;
+
+	index_of_last_from = i: pred: default: list:
+		let
+			index_of_last_ = i: pred: default: list:
+				if i < 0 then
+					default
+				else if pred (elemAt list i) then
+					i
+				else
+					index_of_last_  (i - 1) pred default list
+			;
+		in
+			index_of_last_ i pred default list
+	;
+	index_of_last = pred: default: list:
+		index_of_last_from (length list - 1) pred default list
+	;
+
+	# TODO(feat): `index_of_last'` using method like in `findFirstIndex`.
 }

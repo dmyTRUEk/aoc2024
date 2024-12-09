@@ -95,7 +95,7 @@ let
 			true
 		else
 			let yxd' = step yxd m; in
-			is_looped_ (states // {${toString/*some voodoo magic*/yxd}=0;}) yxd' m
+			is_looped_ (states // {${toString/*some voodoo optimization magic*/yxd}=0;}) yxd' m
 	;
 	is_looped = yxd: m: is_looped_ {} yxd m;
 

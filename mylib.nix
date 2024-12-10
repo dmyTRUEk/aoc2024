@@ -398,4 +398,18 @@ in rec {
 	;
 
 	# TODO(feat): `index_of_last'` using method like in `findFirstIndex`.
+
+	is_in_range = min: max: x: min <= x && x < max;
+	arr2d_is_in_range = xmin: xmax: ymin: ymax: x: y:
+		is_in_range xmin xmax x && is_in_range ymin ymax y
+	;
+	arr2d_is_in_0square = s: x: y: arr2d_is_in_range 0 s 0 s x y;
+
+	# HINT: better just use `{...}` and then `flatten`.
+	# unnest = list:
+	# 	if all isList list then
+	# 		list |> map unnest
+	# 	else
+	# 		list
+	# ;
 }

@@ -8,5 +8,4 @@ let
 		unreachable
 	;
 in
-	input:
-	input
+	input: input

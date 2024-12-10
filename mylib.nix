@@ -280,8 +280,12 @@ in rec {
 
 	find_indices_in_arr2d = pred: arr2d:
 		arr2d
-			|> imap0 (i: list: [i (findFirstIndex pred null list)])
-			|> filter (el: _1 el != null)
+			|> imap0 (i: list:
+				list
+					|> imap0 (j: v: if pred v then [i j] else null)
+					|> filter (ne null)
+			)
+			|> flatten_once
 	;
 
 	find_index_in_arr2d = pred: arr2d:
